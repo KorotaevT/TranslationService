@@ -1,10 +1,13 @@
 package ru.cs.korotaev.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.springframework.beans.factory.annotation.Value
 import javax.sql.DataSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.web.client.RestTemplate
@@ -23,7 +26,7 @@ class ApplicationConfig(
         dataSource.url = dbUrl
         dataSource.username = dbUsername
         dataSource.password = dbPassword
-        dataSource.setDriverClassName("org.postgresql.Driver")
+        dataSource.setDriverClassName(dbDriverClassName)
         return dataSource
     }
 
@@ -39,7 +42,10 @@ class ApplicationConfig(
 
     @Bean
     fun objectMapper(): ObjectMapper {
-        return ObjectMapper()
+        return Jackson2ObjectMapperBuilder.json()
+            .modules(JavaTimeModule())
+            .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build()
     }
 
 }

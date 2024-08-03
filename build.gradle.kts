@@ -34,6 +34,11 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 	implementation("org.springdoc:springdoc-openapi-ui:1.8.0")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
+	implementation("org.springframework.boot:spring-boot-starter-cache")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+	implementation("org.slf4j:slf4j-api:2.0.0")
 }
 
 val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
