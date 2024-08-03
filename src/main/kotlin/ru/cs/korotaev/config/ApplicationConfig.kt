@@ -7,12 +7,14 @@ import org.springframework.beans.factory.annotation.Value
 import javax.sql.DataSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.web.client.RestTemplate
 
 @Configuration
+@Profile("!test")
 class ApplicationConfig(
     @Value("\${spring.datasource.url}") private val dbUrl: String,
     @Value("\${spring.datasource.username}") private val dbUsername: String,
