@@ -2,6 +2,7 @@ package ru.cs.korotaev.config
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,6 +11,8 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.MessageListener
 import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.listener.ChannelTopic
@@ -22,13 +25,22 @@ import java.time.Duration
 @Configuration
 @EnableCaching
 @Profile("!test")
-class RedisConfig {
+class RedisConfig(
+    @Value("\${spring.data.redis.host}") private val redisHostName: String,
+    @Value("\${spring.data.redis.port}") private val redisPort: Int,
+    @Value("\${spring.cache.type}") private val cacheType: String
+) {
 
     private val logger: Logger = LoggerFactory.getLogger(RedisConfig::class.java)
 
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
-        return LettuceConnectionFactory()
+        val lettuceClientConfig = LettuceClientConfiguration.builder()
+            .build()
+
+        val redisStandaloneConfig = RedisStandaloneConfiguration(redisHostName, redisPort)
+
+        return LettuceConnectionFactory(redisStandaloneConfig, lettuceClientConfig)
     }
 
     @Bean
@@ -58,7 +70,7 @@ class RedisConfig {
     ): RedisMessageListenerContainer {
         val container = RedisMessageListenerContainer()
         container.connectionFactory = redisConnectionFactory
-        container.addMessageListener(messageListener, ChannelTopic("redis"))
+        container.addMessageListener(messageListener, ChannelTopic(cacheType))
         return container
     }
 

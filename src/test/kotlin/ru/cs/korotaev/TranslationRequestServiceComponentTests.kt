@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import(TestcontainersConfiguration::class)
 @SpringBootTest(properties = ["spring.profiles.active=test"])
-class TranslationRequestServiceApplicationTests {
+class TranslationRequestServiceComponentTests {
 
 	@Autowired
 	private lateinit var translationRequestService: TranslationRequestService
@@ -120,6 +120,23 @@ class TranslationRequestServiceApplicationTests {
 		assertEquals(savedRequest.id, foundRequest?.id)
 		assertEquals(savedRequest.sourceText, foundRequest?.sourceText)
 		assertEquals(savedRequest.translatedText, foundRequest?.translatedText)
+	}
+
+	@Test
+	fun testGetRequestsByIp() {
+		val ipAddress = "0.0.0.1"
+		val request1 = TranslationRequest(0, ipAddress, "text1", "translated1", LocalDateTime.now())
+		val request2 = TranslationRequest(0, ipAddress, "text2", "translated2", LocalDateTime.now())
+
+		jdbcTemplate.update("INSERT INTO translation_requests (ip_address, source_text, translated_text, request_time) VALUES (?, ?, ?, ?)",
+			request1.ipAddress, request1.sourceText, request1.translatedText, request1.requestTime)
+		jdbcTemplate.update("INSERT INTO translation_requests (ip_address, source_text, translated_text, request_time) VALUES (?, ?, ?, ?)",
+			request2.ipAddress, request2.sourceText, request2.translatedText, request2.requestTime)
+
+		val result = translationRequestService.getRequestsByIp(ipAddress)
+		assertEquals(2, result.size)
+		assert(result.any { it.sourceText == "text1" })
+		assert(result.any { it.sourceText == "text2" })
 	}
 
 	@Test

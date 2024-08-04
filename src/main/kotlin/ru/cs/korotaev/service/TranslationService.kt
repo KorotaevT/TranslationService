@@ -11,6 +11,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import ru.cs.korotaev.exception.LanguageNotFoundException
 import ru.cs.korotaev.exception.TranslationServiceException
@@ -68,16 +69,24 @@ class TranslationService(
             "texts" to listOf(word)
         )
         val request = HttpEntity(requestBody, headers)
+
         val response = try {
             restTemplate.exchange(apiUrl, HttpMethod.POST, request, String::class.java)
-        } catch (ex: Exception) {
-            logger.error("Error performing POST request to $apiUrl", ex)
-            throw TranslationServiceException()
+        } catch (ex: HttpClientErrorException) {
+            val responseBody = ex.responseBodyAsString
+            val jsonNode: JsonNode = objectMapper.readTree(responseBody)
+            val errorMessage = jsonNode.path("message").asText()
+            if (errorMessage.contains("unsupported target_language_code", ignoreCase = true)) {
+                throw LanguageNotFoundException()
+            } else {
+                throw TranslationServiceException()
+            }
         }
 
         val responseBody = response.body ?: throw TranslationServiceException()
         val jsonNode: JsonNode = objectMapper.readTree(responseBody)
         val translation = jsonNode.path("translations").firstOrNull()?.path("text")?.asText()
+
         return translation ?: throw LanguageNotFoundException()
     }
 
