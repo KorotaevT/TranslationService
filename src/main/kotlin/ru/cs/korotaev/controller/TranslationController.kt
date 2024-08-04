@@ -22,7 +22,7 @@ class TranslationController(
 ) {
 
     @PostMapping
-    @Operation(summary = "Перевод текста", description = "Переводит текст с одного языка на другой")
+    @Operation(summary = "Перевод текста", description = "Переводит текст с одного языка на другой(список всех поддерживаемых языков можно получить в запросе \"Получение поддерживаемых языков\")")
     fun translate(
         @RequestParam sourceLang: String,
         @RequestParam targetLang: String,
@@ -44,7 +44,7 @@ class TranslationController(
     }
 
     @GetMapping("/languages")
-    @Operation(summary = "Получение языков", description = "Возвращает список доступных языков")
+    @Operation(summary = "Получение поддерживаемых языков", description = "Возвращает список всех доступных для перевода языков")
     fun getSupportedLanguages(): ResponseEntity<String> {
         val supportedLanguages = translationRequestService.getSupportedLanguages()
         return ResponseEntity.ok(supportedLanguages)
@@ -58,21 +58,21 @@ class TranslationController(
     }
 
     @GetMapping("/requests/{id}")
-    @Operation(summary = "Получение запроса по ID", description = "Возвращает запрос на перевод по ID")
+    @Operation(summary = "Получение запроса по ID записи", description = "Возвращает запрос на перевод по ID записи")
     fun getRequestById(@PathVariable id: Long): ResponseEntity<TranslationRequest?> {
         val request = translationRequestService.getRequestById(id)
         return ResponseEntity.ok(request)
     }
 
     @GetMapping("/requests/ip/{ipAddress}")
-    @Operation(summary = "Получение запросов по IP", description = "Возвращает все запросы на перевод по IP-адресу")
+    @Operation(summary = "Получение запросов по IP пользователя", description = "Возвращает все запросы на перевод по IP-адресу пользователя")
     fun getRequestsByIp(@PathVariable ipAddress: String): ResponseEntity<List<TranslationRequest>> {
         val requests = translationRequestService.getRequestsByIp(ipAddress)
         return ResponseEntity.ok(requests)
     }
 
     @GetMapping("/requests/text")
-    @Operation(summary = "Получение запросов по тексту", description = "Возвращает все запросы на перевод по части текста")
+    @Operation(summary = "Получение запросов по содержимому текста", description = "Возвращает все запросы на перевод по части оригинального текста или перевода")
     fun getRequestsByTextPart(@RequestParam textPart: String): ResponseEntity<List<TranslationRequest>> {
         val requests = translationRequestService.getRequestsByTextPart(textPart)
         return ResponseEntity.ok(requests)
